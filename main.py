@@ -1,16 +1,15 @@
-# This is a sample Python script.
+from flask import Flask
+from pymongo import MongoClient
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+app = Flask(__name__)
+client = MongoClient('localhost', 27017)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+@app.route('/')
+def index():
+	return 'Server Works!'
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+@app.route('/count')
+def get_count():
+	return str(client.db['CS301'].count_documents({}))
