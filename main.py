@@ -1,9 +1,9 @@
 import pymongo
 from flask import Flask
-from pymongo import MongoClient
+from bson.json_util import dumps
 
 app = Flask(__name__)
-db = MongoClient('localhost', 27017).db
+db = pymongo.MongoClient('localhost', 27017).db
 
 
 @app.route('/')
@@ -36,11 +36,11 @@ def homework3():
 
 @app.route('/HW4')
 def homework4():
-	output = ''
-	for document in db.CS301.find({'founded_year': {'$gt': 2000}, 'number_of_employees': {'$gte': 5000}},
-	{'_id':0,'name':1,'founded_year':1,'number_of_employees':1,'total_money_raised':1}):
-		output += str(document) + '<br>'
+	cursor = db.CS301.find({'founded_year': {'$gt': 2000}, 'number_of_employees': {'$gte': 5000}},
+	{"_id":0,"name":1,"founded_year":1,"number_of_employees":1,"total_money_raised":1})
 
+	output = dumps(cursor, indent=1)
+	output = output.replace('\n', '<br>')
 	return output
 
 
@@ -86,4 +86,15 @@ def homework10():
 	{'_id':0,'name':1,'homepage_url':1,'number_of_employees':1,'products.name':1}):
 		output += str(document) + '<br>'
 
+	return output
+
+
+@app.route('/HW11')
+def homework11():
+	output = ''
+	for document in db.CS301.aggregate([{'$match': {'founded_year': 1800, 'products.name': {'$exists': 'true'}}},
+	{'$project': {'_id':0,'name':1,'homepage_url':1, 'number_of_employees':1,"products.name":1}}]):
+		output += dumps(document) + '\n'
+
+	output = output.replace('\n', '<br>')
 	return output
