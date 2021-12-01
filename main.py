@@ -1,5 +1,5 @@
 import pymongo
-from flask import Flask
+from flask import Flask, redirect
 from bson.json_util import dumps
 
 app = Flask(__name__)
@@ -91,7 +91,25 @@ def listCompaniesByYear(yearFounded):
 	if len(yearFounded) != 4:
 		return 'Year must be a four digit number'
 	elif db.CS301.count_documents({'founded_year': int(yearFounded)}) < 1:
-		return f'No companies were founded in the year {yearFounded}'
+		return f'No companies founded in the year {yearFounded}'
 	else:
 		cursor = db.CS301.find({'founded_year': int(yearFounded)})
 		return dumps(cursor, indent=2).replace('\n', '<br>')
+
+
+@app.route('/count_companies_by_year/<yearFounded>')
+def countCompaniesByYear(yearFounded):
+	if len(yearFounded) != 4:
+		return 'Year must be a four digit number'
+	else:
+		count = db.CS301.count_documents({'founded_year': int(yearFounded)})
+		return f'There were {count} companies founded in {yearFounded}'
+
+
+@app.route('/crunchbase/redirect/<companyName>')
+def crunchbaseRedirect(companyName):
+	company = db.CS301.find_one({'name': companyName})
+	if company:
+		return redirect(company['crunchbase_url'])
+	else:
+		return f'There is no company by the name {companyName}'
